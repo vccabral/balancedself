@@ -1,0 +1,1 @@
+web: gunicorn balancedself.wsgi --log-file -

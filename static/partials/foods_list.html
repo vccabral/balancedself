@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-md-7">
+        <h1 ng-cloak>{{ page_info.message }}</h1>
+
+        <table class='table'>
+            <tr>
+                <td>#</td>
+                <td>Product</td>
+                <td>Price</td>
+                <td>Quanity</td>
+                <td ng-repeat="nutrition_fact in page_info.products.results[0].nutrition_facts">
+                    {{ nutrition_fact.nutrient_readonly.name }} ({{ nutrition_fact.nutrient_readonly.unit.name }})
+                </td>
+            </tr>
+            <tr ng-repeat="product in (page_info.products.results | orderBy:'nutrition_facts[0].quantity')">
+                <td>
+                    {{ $index+1 }}
+                </td>
+                <td>
+                    {{ product.name }}
+                </td>
+                <td>
+                    {{ product.price | currency }}
+                </td>
+                <td>
+                    {{ product.quanity_as_listed }}
+                </td>
+                <td ng-repeat="nutrition_fact in product.nutrition_facts">
+                    {{ nutrition_fact.quantity }}
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</div>

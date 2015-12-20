@@ -1,0 +1,98 @@
+<div class="row">
+    <div class="col-md-7">
+        <h1 ng-cloak>{{ page_info.message }}</h1>
+        {{constraint }}
+        Nutrition Standard: <select ng-change="findOptimalMealPlan()" class="btn btn-default dropdown-toggle" type='button' ng-cloak ng-model="page_info.selected_standard">
+            <option ng-value="standard.id" ng-repeat="standard in page_info.standards.results">
+                {{ standard.name }}
+            </option>
+        </select>
+        <select ng-change="findOptimalMealPlan()" ng-model="page_info.selected_span" class="btn btn-default dropdown-toggle">
+            <option value='day'>Daily</option>
+            <option selected value='week'>Weekly</option>
+            <option value='biweekly'>Two Weeks</option>
+            <option value='monthly'>Monthly</option>
+        </select>
+
+        <br/>
+        <br/>
+
+        <table class='table'>
+            <tr>
+                <td>#</td>
+                <td>Nutrient</td>
+                <td>Min.</td>
+                <td>Max.</td>
+                <td ng-show="page_info.mealplan.success">My&nbsp;Plan</td>
+            </tr>
+            <tr ng-repeat="constraint in page_info.standard_constraints">
+                <td>
+                    {{ $index+1 }}
+                </td>
+                <td>
+                    {{ constraint.nutrient.name }}
+                </td>
+                <td>
+                    <input ng-change="findOptimalMealPlan()" ng-model="constraint.quantity" class="col-xs-6 input-sm"/>&nbsp;&nbsp;{{ constraint.nutrient.unit.name }}/day
+                </td>
+                <td>
+                    <input ng-change="findOptimalMealPlan()" ng-model="constraint.max_quantity" class="col-xs-6 input-sm"/>&nbsp;&nbsp;
+                    {{ constraint.nutrient.unit.name }}/day
+                </td>
+                <td ng-show="page_info.mealplan.success">
+                    <span ng-if="page_info.selected_span=='day'">
+                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total | number:3 }}{{ constraint.nutrient.unit.name }}/day
+                    </span>
+                    <span ng-if="page_info.selected_span=='week'">
+                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 | number:3 }}{{ constraint.nutrient.unit.name }}/day
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+        <br/><br/>
+
+    </div>
+    <div class="col-md-5">
+        <h1>Meal Plan</h1>
+        <p ng-if="page_info.mealplan">
+            <h4>Optimal Meal Plan</h4>
+            <span ng-if="!page_info.mealplan.success">
+                We couldn't find a meal plan for you. Please try and lighten your constraints or checkback later when more products have been added.
+            </span>
+            <p>
+                <table class='table' ng-show="page_info.mealplan.success">
+                    <tr>
+                        <td>Product</td>
+                        <td>#</td>
+                        <td>Price</td>
+                        <td>Total</td>
+                    </tr>
+                    <tr ng-repeat="lineitem in page_info.mealplan.product_line_items | orderBy:'-product_quantity'">
+                        <td>
+                            {{ lineitem.name }}
+                            {{ lineitem.product_package_size }}
+                        </td>
+                        <td>
+                            {{ lineitem.product_quantity }}
+                        </td>
+                        <td>
+                            {{ lineitem.price | currency }}
+                        </td>
+                        <td>
+                            {{ lineitem.product_quantity*lineitem.price |  currency }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            Total
+                        </td>
+                        <td>
+                            {{ page_info.mealplan.product_total | currency }}
+                        </td>
+                    </tr>
+                </table>
+            </p>
+        </p>
+    </div>
+</div>
