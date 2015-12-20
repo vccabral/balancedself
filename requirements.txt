@@ -1,4 +1,4 @@
-Django==1.9
+Django==1.8.2
 PuLP==1.5.9
 PyJWT==1.1.0
 beautifulsoup4==4.3.2
