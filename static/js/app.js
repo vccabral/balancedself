@@ -1,6 +1,6 @@
 var mealApp = angular.module('mealApp', ['ngResource', 'ngRoute']);
 
-mealApp.constant('api_url', '/api/v1/');
+mealApp.constant('api_url', url_base+'/api/v1/');
 mealApp.constant('user', user);
 mealApp.constant('user_id', user_id);
 mealApp.constant('authenticated', authenticated);
