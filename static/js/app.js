@@ -26,6 +26,12 @@ mealApp.factory('MealPlan', function(api_url, $resource) {
 });
 
 mealApp.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, $timeout, $interval) {
+	$scope.greaterThan = function(prop, val){
+	    return function(item){
+	      return item[prop] > val;
+	    }
+	};
+
 	var findOptimalMealPlanClicks = 0;
 	var findOptimalMealPlanLastClicks = 0;
 	$interval(5000, function(){
@@ -37,18 +43,31 @@ mealApp.controller('MealPlannerController', function($scope, Standard, Tag, Meal
 		}
 	});
 	$scope.findOptimalMealPlanBrains = function(){
+		$scope.page_info.getting_meal_plan = true;
+		$scope.page_info.failed_to_find_meal = false;
 		var params = {
 			'mealplan': $scope.page_info.selected_standard,
 			'must_haves': $scope.page_info.must_haves,
 			'must_not_haves': $scope.page_info.must_not_haves,
 			'span': $scope.page_info.selected_span
 		};
+
 		for(var i=0;i<$scope.page_info.standard_constraints.length;i++){
 			var d = $scope.page_info.standard_constraints[i];
 			params['nutrient_'+d.nutrient.id+'_low'] = d.quantity;
 			params['nutrient_'+d.nutrient.id+'_high'] = d.max_quantity;
 		}
-		$scope.page_info.mealplan = MealPlan.get(params);
+
+		for(var i=0;i<$scope.page_info.product_constraints.length;i++){
+			var d = $scope.page_info.product_constraints[i];
+			params['product_'+d.product.id+'_low'] = d.quantity;
+			params['product_'+d.product.id+'_high'] = d.max_quantity;
+		}
+
+		$scope.page_info.mealplan = MealPlan.get(params, function(mealplan){
+			$scope.page_info.getting_meal_plan = false;
+			$scope.page_info.failed_to_find_meal = !mealplan.success;
+		});
 	};
 	$scope.findOptimalMealPlan = function(){
 		findOptimalMealPlanClicks = findOptimalMealPlanClicks + 1;
@@ -75,7 +94,10 @@ mealApp.controller('MealPlannerController', function($scope, Standard, Tag, Meal
 		'must_haves_name': [],
 		'must_not_haves_name': [],
 		'mealplan': false,
+		'getting_meal_plan': false,
+		'failed_to_find_meal': false,
 		'standard_constraints': [],
+		'product_constraints': {},
 		'selected_span': 'week',
 		'show_all_food': true,
 		'selection_options': [{ "value": 'day', "text": "Daily" }, { "value": 'week', "text": "Weekly" }]

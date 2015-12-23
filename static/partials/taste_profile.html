@@ -17,6 +17,7 @@
         <br/>
         <br/>
 
+        {{ page_info.mealplan.nutrition_info_line_items[2].total/7*9 + page_info.mealplan.nutrition_info_line_items[3].total/7*4 + page_info.mealplan.nutrition_info_line_items[6].total/7*4 }}
         <table class='table'>
             <tr>
                 <td>#</td>
@@ -44,7 +45,12 @@
                         {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total | number:3 }}{{ constraint.nutrient.unit.name }}/day
                     </span>
                     <span ng-if="page_info.selected_span=='week'">
-                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 | number:3 }}{{ constraint.nutrient.unit.name }}/day
+                    <span ng-if="((page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 - constraint.quantity)/constraint.quantity) < 0.1">
+                    {{ (page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 - constraint.quantity)/constraint.quantity }}<br/>
+                    </span>
+                    <span>
+                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 | number:'2' }}
+                    </span>
                     </span>
                 </td>
             </tr>
@@ -57,7 +63,13 @@
         <h1>Meal Plan</h1>
         <p ng-if="page_info.mealplan">
             <h4>Optimal Meal Plan</h4>
-            <span ng-if="!page_info.mealplan.success">
+            <span ng-if="page_info.selected_standard == ''">
+                Please select a meal plan to continue.
+            </span>
+            <span ng-if="page_info.getting_meal_plan && page_info.selected_standard!=''">
+                We are working on retrieving a meal plan for you! Please be patient. 
+            </span>
+            <span ng-if="page_info.failed_to_find_meal">
                 We couldn't find a meal plan for you. Please try and lighten your constraints or checkback later when more products have been added.
             </span>
             <p>
@@ -96,3 +108,38 @@
         </p>
     </div>
 </div>
+<div class="row">
+    <table class="table table-bordered table-condensed">
+        <tr>
+            <td>
+                Nutrient
+            </td>
+            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                {{ lineitem.name }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                #
+            </td>
+            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                {{ lineitem.product_quantity }}
+            </td>
+        </tr>
+        <tr ng-repeat="constraint in page_info.standard_constraints">
+            <td>
+                {{ constraint.nutrient.name }}
+            </td>
+            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                {{ (lineitem.nutrition_info[constraint.nutrient.id].package_size * lineitem.nutrition_info[constraint.nutrient.id].quantity / 7) | number:'2' }} 
+            </td>
+        </tr>
+    </table>
+</div>
+
+<style type="text/css">
+.vertical-text {
+    transform: rotate(90deg);
+    transform-origin: left top 0;
+}    
+</style>

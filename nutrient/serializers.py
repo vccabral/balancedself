@@ -55,7 +55,7 @@ class NutrientHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer)
 	unit_readonly = UnitOfMeasureModelSerializer(source='unit')
 	class Meta:
 		model = Nutrient
-		fields = ('url', 'name', 'unit', 'unit_readonly', 'minimum_scale', 'maximum_scale', 'number_of_ticks')
+		fields = ('url', 'name', 'unit', 'unit_readonly', 'minimum_scale', 'maximum_scale', 'number_of_ticks', 'id')
 
 class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
 	complete = serializers.SerializerMethodField()

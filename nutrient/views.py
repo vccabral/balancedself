@@ -8,6 +8,8 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 import sys
 import numpy as np
+from decimal import *
+from pulp import LpProblem, LpVariable, LpMinimize, lpSum
 
 class ConstraintViewSet(viewsets.ModelViewSet):
 	queryset = Constraint.objects.all()
@@ -36,7 +38,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class MealPlan(object):
 
-	def __init__(self, standard, must_haves, must_not_haves, nutrients, span):
+	def __init__(self, standard, must_haves, must_not_haves, nutrients, products, span):
 		span_map = {
 			"day": 1,
 			"week": 7,
@@ -47,6 +49,7 @@ class MealPlan(object):
 		self.must_haves = must_haves
 		self.must_not_haves = must_not_haves
 		self.nutrients = nutrients
+		self.products = products
 		self.days = span_map[span]
 
 	def get_nutrient_min(self, nutrient):
@@ -79,6 +82,8 @@ class MealPlan(object):
 		result['must_haves'] = self.must_haves
 		result['must_not_haves'] = self.must_not_haves
 		result['nutrients'] = self.nutrients
+		result['products'] = self.products
+
 		if result['must_haves']:
 			product_list = Product.objects.filter(confirmed=True, tags__pk__in=self.must_haves).exclude(tags__pk__in=self.must_not_haves)
 		else:
@@ -112,12 +117,12 @@ class MealPlan(object):
 						A[i*2+1][j] = 0
 			# print(A)
 
-			from pulp import *
 			prob = LpProblem("myProblem", LpMinimize)
+
 			x = [LpVariable(
 					"x_"+str(x.name), 
-					0, 
-					None, 
+					int(self.products[str(x.id)]["low"]) if self.products[str(x.id)]["low"] else 0,
+					int(self.products[str(x.id)]["high"]) if self.products[str(x.id)]["high"] else None,
 					cat='Integer'
 				) for i,x in enumerate(product_list)]
 			prob += lpSum([xp*cp for xp, cp in zip(x, c)]), "Total Cost of Ingredients per can" #[ for ]
@@ -135,9 +140,18 @@ class MealPlan(object):
 				result['product_line_items'] = [
 					{
 						'name': product,
+						'id': Product.objects.get(name=product).id,
 						'product_quantity': quantity.varValue,
 						'product_package_size': Product.objects.get(name=product).quanity_needed,
-						'price': cost
+						'price': cost,
+						'nutrition_info': {
+							nutrient_info.nutrient.id: {
+								"quantity": quantity.varValue,
+								"package_size": nutrient_info.quantity,
+								"unit": nutrient_info.nutrient.unit.name
+							}
+							for nutrient_info in Product.objects.get(name=product).nutrition_facts.all()
+						}
 					} for product, quantity, cost in zip(result['product_list'], prob.variables(), c)
 				]
 				result['product_total'] = reduce(lambda x, y:x+y['price']*y['product_quantity'], result['product_line_items'], 0)
@@ -161,6 +175,7 @@ class MealPlan(object):
 		except:
 			result['success'] = False
 			result['reason'] = "An error was thrown: "+str(sys.exc_info()[0])
+			raise
 			return result
 
 class MealPlanAPIView(APIView):
@@ -172,11 +187,20 @@ class MealPlanAPIView(APIView):
 		nutrients = {
 			str(nutrient.pk): {
 				"low": request.GET.get("nutrient_"+str(nutrient.pk)+"_low", None),
-				"high": request.GET.get("nutrient_"+str(nutrient.pk)+"_high", None)
+				"high": request.GET.get("nutrient_"+str(nutrient.pk)+"_high", None),
+				"name": nutrient.name
 			} for nutrient in Nutrient.objects.all()
 		}
-		
-		mealplan = MealPlan(standard, must_haves, must_not_haves, nutrients, span)
+
+		products = {
+			str(product.pk): {
+				"low": request.GET.get("product_"+str(product.pk)+"_low", None),
+				"high": request.GET.get("product_"+str(product.pk)+"_high", None),
+				"name": product.name
+			} for product in Product.objects.all()
+		}
+
+		mealplan = MealPlan(standard, must_haves, must_not_haves, nutrients, products, span)
 		result = mealplan.calculate_maximum_plan()
 		response = Response(result, status=status.HTTP_200_OK)
 		return response
