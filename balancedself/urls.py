@@ -70,7 +70,6 @@ class HomePageView(TemplateView):
         return context
 
 router = routers.DefaultRouter()
-router.register(r'constraint', views.ConstraintViewSet)
 router.register(r'unitofmeasure', views.UnitOfMeasureViewSet)
 router.register(r'standard', views.StandardViewSet)
 router.register(r'nutrient', views.NutrientViewSet)

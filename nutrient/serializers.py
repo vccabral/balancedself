@@ -57,6 +57,7 @@ class NutrientHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer)
 		model = Nutrient
 		fields = ('url', 'name', 'unit', 'unit_readonly', 'minimum_scale', 'maximum_scale', 'number_of_ticks', 'id')
 
+
 class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
 	complete = serializers.SerializerMethodField()
 	tags_readonly = TagModelSerializer(source='tags', many=True, read_only=True)
@@ -96,6 +97,14 @@ class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Product
 		fields = ('url', 'quanity_as_listed', 'complete', 'tags', 'tags_readonly', 'nutrition_facts', 'price', 'name')
+
+
+class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
+
+	class Meta:
+		model = Product
+		fields = ('url', 'quanity_as_listed', 'tags', 'price', 'name', 'id', 'quanity_needed')
+
 
 class TagHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:

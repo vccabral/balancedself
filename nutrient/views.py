@@ -3,37 +3,84 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
+import sys
+import numpy as np
+import django_filters
+
 from nutrient import serializers
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-import sys
-import numpy as np
 from decimal import *
 from pulp import LpProblem, LpVariable, LpMinimize, lpSum
+from rest_framework import filters
+from rest_framework import generics
 
-class ConstraintViewSet(viewsets.ModelViewSet):
-	queryset = Constraint.objects.all()
-	serializer_class = serializers.ConstraintModelSerializer
+
+class StandardFilter(django_filters.FilterSet):
+    class Meta:
+        model = Standard
+        fields = ['name']
 
 class StandardViewSet(viewsets.ModelViewSet):
 	queryset = Standard.objects.all()
 	serializer_class = serializers.StandardHyperlinkedModelSerializer
+	filter_class = StandardFilter
+
+	def get_queryset(self):
+		return Standard.objects.all().prefetch_related("constraints__nutrient__unit")
+
+
+
+class NutrientFilter(django_filters.FilterSet):
+    class Meta:
+        model = Nutrient
+        fields = ['name']
 
 class NutrientViewSet(viewsets.ModelViewSet):
 	queryset = Nutrient.objects.all()
 	serializer_class = serializers.NutrientHyperlinkedModelSerializer
+	filter_class = NutrientFilter
+
+	def get_queryset(self):
+		return Nutrient.objects.all().select_related("unit")
+
+
+class UnitOfMeasureFilter(django_filters.FilterSet):
+    class Meta:
+        model = UnitOfMeasure
+        fields = ['name']
 
 class UnitOfMeasureViewSet(viewsets.ModelViewSet):
 	queryset = UnitOfMeasure.objects.all()
 	serializer_class = serializers.UnitOfMeasureModelSerializer
+	filter_class = UnitOfMeasureFilter
+
+
+
+class ProductFilter(django_filters.FilterSet):
+    class Meta:
+        model = Product
+        fields = ['name']
 
 class ProductViewSet(viewsets.ModelViewSet):
 	queryset = Product.objects.all()
 	serializer_class = serializers.ProductHyperlinkedModelSerializer
+	filter_class = ProductFilter
+	
+	def get_queryset(self):
+		return Product.objects.all().prefetch_related("nutrition_facts", "tags")
+
+
+
+class TagFilter(django_filters.FilterSet):
+    class Meta:
+        model = Tag
+        fields = ['name']
 
 class TagViewSet(viewsets.ModelViewSet):
 	queryset = Tag.objects.all()
 	serializer_class = serializers.TagHyperlinkedModelSerializer
+	filter_class = TagFilter
 
 
 class MealPlan(object):
@@ -197,7 +244,7 @@ class MealPlanAPIView(APIView):
 				"low": request.GET.get("product_"+str(product.pk)+"_low", None),
 				"high": request.GET.get("product_"+str(product.pk)+"_high", None),
 				"name": product.name
-			} for product in Product.objects.all()
+			} for product in Product.objects.all().prefetch_related("nutrition_facts")
 		}
 
 		mealplan = MealPlan(standard, must_haves, must_not_haves, nutrients, products, span)

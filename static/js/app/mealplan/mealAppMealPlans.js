@@ -1,31 +1,12 @@
-var mealApp = angular.module('mealApp', ['ngResource', 'ngRoute']);
+var mealAppMealPlans = angular.module(
+	'mealApp.MealPlans', [
+		'mealApp.API',
+		'ngRoute'
+	]
+);
 
-mealApp.constant('api_url', url_base+'/api/v1/');
-mealApp.constant('user', user);
-mealApp.constant('user_id', user_id);
-mealApp.constant('authenticated', authenticated);
 
-mealApp.factory('Standard', function(api_url, $resource) {
-	return $resource(api_url+"standard/:id")
-});
-
-mealApp.factory('Nutrient', function(api_url, $resource) {
-	return $resource(api_url+"nutrient/:id")
-});
-
-mealApp.factory('Product', function(api_url, $resource) {
-	return $resource(api_url+"product/:id")
-});
-
-mealApp.factory('Tag', function(api_url, $resource) {
-	return $resource(api_url+"tag/:id")
-});
-
-mealApp.factory('MealPlan', function(api_url, $resource) {
-	return $resource(api_url+"mealplan/:id")
-});
-
-mealApp.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, $timeout, $interval) {
+mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, $timeout, $interval) {
 	$scope.greaterThan = function(prop, val){
 	    return function(item){
 	      return item[prop] > val;
@@ -149,29 +130,11 @@ mealApp.controller('MealPlannerController', function($scope, Standard, Tag, Meal
 	);
 });
 
-mealApp.controller('FoodsListController', function($scope, Product){
-	$scope.page_info = {
-		'products': Product.get(),
-		'message': "Our Food List"
-	};
 
-});
-
-
-mealApp.config(function($routeProvider, $locationProvider){
+mealAppMealPlans.config(function($routeProvider, $locationProvider){
     $routeProvider
-    .when('/', {
-        templateUrl: 'static/partials/taste_profile.html',
+    .when('/mealplans', {
+        templateUrl: 'static/js/app/mealplan/mealplan.html',
         controller: 'MealPlannerController'
     })
-    .when('/foodsummary', {
-        templateUrl: 'static/partials/foods_list.html',
-        controller: 'FoodsListController'
-    })
-    .when('/suggestion', {
-        templateUrl: 'static/partials/meal_suggestion.html'
-    })
-    .otherwise({
-        redirectTo: '/'
-    });
 });

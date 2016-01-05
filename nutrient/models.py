@@ -33,7 +33,10 @@ class Nutrient(models.Model):
 		ordering = ['importance','name']
 
 	def __str__(self):
-		return str(self.name)+"("+self.unit.name+")"
+
+		from nutrient.models import Product
+		products = Product.objects.filter(nutrition_facts__nutrient=self, nutrition_facts__quantity__gt=0).count()
+		return str(self.name)+"("+self.unit.name+") "+str(products)+" products "
 
 class Standard(models.Model):
 	name = models.CharField(max_length=200, unique=True)

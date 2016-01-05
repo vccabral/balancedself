@@ -43,7 +43,15 @@ INSTALLED_APPS = (
     'rest_framework',
     'nutrient',
     'social.apps.django_app.default',
+    'debug_toolbar',
+    'crispy_forms',
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'PAGE_SIZE': 500
+}
 
 AUTHENTICATION_BACKENDS = (
     'social.backends.facebook.FacebookOAuth2',
@@ -58,11 +66,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social.apps.django_app.context_processors.backends',
     'social.apps.django_app.context_processors.login_redirect',
 )
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
-    'PAGE_SIZE': 500
-}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -145,3 +148,4 @@ if os.environ.get("ON_HEROKU", "False") == "True":
     ALLOWED_HOSTS = ['*']
 
     SECRET_KEY = os.environ.get("SECRET_KEY")
+
