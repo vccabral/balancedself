@@ -5,11 +5,10 @@ var mealAppMealPlans = angular.module(
 	]
 );
 
-
-mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, $timeout, $interval) {
+mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, Product, $timeout, $interval) {
 	$scope.greaterThan = function(prop, val){
 	    return function(item){
-	      return item[prop] > val;
+			return item[prop] > val;
 	    }
 	};
 
@@ -39,10 +38,10 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			params['nutrient_'+d.nutrient.id+'_high'] = d.max_quantity;
 		}
 
-		for(var i=0;i<$scope.page_info.product_constraints.length;i++){
-			var d = $scope.page_info.product_constraints[i];
-			params['product_'+d.product.id+'_low'] = d.quantity;
-			params['product_'+d.product.id+'_high'] = d.max_quantity;
+		for(var i=0;i<$scope.page_info.products.results.length;i++){
+			var d = $scope.page_info.products.results[i];
+			params['product_'+d.id+'_low'] = d.quantity;
+			params['product_'+d.id+'_high'] = d.max_quantity;
 		}
 
 		$scope.page_info.mealplan = MealPlan.get(params, function(mealplan){
@@ -62,12 +61,12 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 	var setMeal = function(index){
 		$scope.page_info.selected_standard_name = $scope.page_info.standards.results[index].name;
 		$scope.page_info.standard_constraints = angular.copy($scope.page_info.standards.results[index].constraints_readonly);
-		$scope.findOptimalMealPlan();
 	};
 	$scope.page_info = {
 		'message': 'Design your Diet',
 		'standards': Standard.get(),
 		'tags': Tag.get(),
+		'products': Product.get(),
 		'selected_standard': 0,
 		'must_haves': [],
 		'must_not_haves': [],
@@ -79,9 +78,10 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		'failed_to_find_meal': false,
 		'standard_constraints': [],
 		'product_constraints': {},
-		'selected_span': 'week',
+		'selected_span': 7,
 		'show_all_food': true,
-		'selection_options': [{ "value": 'day', "text": "Daily" }, { "value": 'week', "text": "Weekly" }]
+		'selection_options': [{ "value": 'day', "text": "Daily" }, { "value": 'week', "text": "Weekly" }],
+		'spans': [7,14,21,28,31,60,90,365]
 	};
 	$scope.$watch(function(scope){
 			return scope.page_info.selected_standard

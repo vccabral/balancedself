@@ -7,7 +7,9 @@ var mealAppStandards = angular.module(
 
 
 mealAppStandards.controller('StandardController', function($scope, Standard){
-	$scope.page_info = {};
+	$scope.page_info = {
+		"standards": Standard.get()
+	};
 
 });
 

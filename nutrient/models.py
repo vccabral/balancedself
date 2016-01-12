@@ -30,7 +30,7 @@ class Nutrient(models.Model):
 	importance = models.IntegerField(default=1)
 
 	class Meta:
-		ordering = ['importance','name']
+		ordering = ['importance','name', 'pk']
 
 	def __str__(self):
 
@@ -77,6 +77,8 @@ class Product(models.Model):
 	raw_data_body = models.CharField(max_length=10000, blank=True, default="")
 	conversion_factor = models.DecimalField(decimal_places=5, max_digits=12, default=0)
 	has_been_converted = models.BooleanField(default=False)
+	quantity = models.IntegerField(default=0)
+	max_quantity = models.IntegerField(default=7)
 
 	class Meta:
 		ordering = ['name']
@@ -87,29 +89,56 @@ class Product(models.Model):
 		has_quanity_needed = self.quanity_needed
 		return all_nutrients and not duplicate_nutrients and has_quanity_needed
 
-	def __str__(self):
-		if self.get_complete():
-			return self.name+", flagged as complete"
-		else:
-			list_of_complete = []
-			sublist_of_nutrients = self.nutrition_facts.all().values_list('nutrient', flat=True)
-			total_nutrient_ids = Nutrient.objects.all().exclude(id__in=sublist_of_nutrients).values_list('name', flat=True)
-			duplicate_nutrient = []
-			for nutrient in sublist_of_nutrients:
-				if self.nutrition_facts.all().filter(nutrient__pk=nutrient).count() > 1 and Nutrient.objects.get(pk=nutrient) not in duplicate_nutrient:
-					duplicate_nutrient.append(Nutrient.objects.get(pk=nutrient))
+	def page_to_array_of_nutrient_info(self):
+		import urllib2
+		import re
+		import demjson
+		from bs4 import BeautifulSoup
 
-			if len(duplicate_nutrient) > 0:
-				return self.name + ", flagged as incomplete duplicate "+str(map(lambda x: x.name, duplicate_nutrient))+" nutrient(s)"
-			if len(total_nutrient_ids) > 5:
-				return self.name + ", flagged as incomplete on "+str(len(total_nutrient_ids))+"/"+str(Nutrient.objects.all().count())+" nutrient(s)"
-			else:
-				return self.name + ", flagged as incomplete on "+str(map(str, total_nutrient_ids))
+		nutrients = ["Calories","Fat","Carbohyrates","Fiber","Sugars","Protein","Vitamin A","Vitamin C","Vitamin D","Vitamin E","Vitamin K","Thiamin","Riboflavin","Niacin","Vitamin B6","Folate","Vitamin B12","Pantothenic Acid","Choline","Betaine","Calcium","Iron","Magnesium","Phosphorus","Potassium","Sodium","Zinc","Copper","Manganese","Selenium","Cholesterol"]
+		nutrients_id = [0,14,4,5,7,77,97,100,101,102,103,107,108,109,110,111,115,116,143,144,117,118,119,120,121,122,123,124,125,126,72]
+		response = urllib2.urlopen(self.url)
+		html_doc = response.read()
+		soup = BeautifulSoup(html_doc, 'html.parser')
+		script = str(soup.find_all("script")[36].string)
+		serving = soup.find("select",  {"name": "serving"}).findAll("option")[0].contents[0]
+
+		p = re.compile('foodNutrients = ([^;]+);')
+		m = p.search(script)
+		food_nutrients = str(m.groups(0)[0]) 
+		stocks = demjson.decode(food_nutrients)
+
+		# nutrient_info, product_unit, raw_joson
+		nutrient_info = [float(stocks["NUTRIENT_"+str(nutrients_id[nutrients.index(nutrient)])]) if stocks["NUTRIENT_"+str(nutrients_id[nutrients.index(nutrient)])] != "~" else 0 for nutrient in nutrients] 
+		return nutrient_info, serving, stocks
+
+
+	def save(self, *args, **kwargs):
+		is_create = not self.pk
+		super(Product, self).save(*args, **kwargs) 
+		if is_create and self.url:
+
+			nutrient_info, product_unit, raw_joson = self.page_to_array_of_nutrient_info()
+			nutrients = ["Calories","Fat","Carbohyrates","Fiber","Sugars","Protein","Vitamin A","Vitamin C","Vitamin D","Vitamin E","Vitamin K","Thiamin","Riboflavin","Niacin","Vitamin B6","Folate","Vitamin B12","Pantothenic Acid","Choline","Betaine","Calcium","Iron","Magnesium","Phosphorus","Potassium","Sodium","Zinc","Copper","Manganese","Selenium","Cholesterol"]
+			self.raw_data_body = raw_joson
+			self.save()
+
+			needed_quantity = float(self.quanity_as_listed) / 100.0
+
+			for nutrient, quantity in zip(nutrients, nutrient_info):
+				NutritionFact.objects.create(
+					product = self, 
+					nutrient_id = Nutrient.objects.get(name=nutrient).id,
+					quantity = quantity * needed_quantity
+				)
+
+	def __str__(self):
+		return self.name
 
 class NutritionFact(models.Model):
 	product = models.ForeignKey(Product, related_name='nutrition_facts')
 	nutrient = models.ForeignKey(Nutrient)
-	quantity = models.DecimalField(decimal_places=3, max_digits=9)
+	quantity = models.DecimalField(decimal_places=3, max_digits=12)
 	corroborate = models.ManyToManyField(User, blank=True, related_name="corroborating_users")
 	dispute = models.ManyToManyField(User, blank=True, related_name="disputing_users")
 	from_manufacturer = models.BooleanField(default=False)

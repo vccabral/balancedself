@@ -59,51 +59,10 @@ class NutrientHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer)
 
 
 class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
-	complete = serializers.SerializerMethodField()
-	tags_readonly = TagModelSerializer(source='tags', many=True, read_only=True)
-	nutrition_facts = NutrientInfoModelSerializer(many=True, read_only=False)
-
-	def create(self, validated_data):
-		nutrition_facts = validated_data.pop('nutrition_facts')
-		tags = validated_data.pop('tags')
-		validated_data['confirmed'] = False
-		product = Product.objects.create(**validated_data)
-		for nutrition_fact in nutrition_facts:
-			NutritionFact.objects.create(product=product, **nutrition_fact)
-		for tag in tags:
-			product.tags.add(tag)
-		product.save()
-		return product
-
-	def update(self, instance, validated_data):
-		nutrition_facts = validated_data.pop('nutrition_facts')
-		tags = validated_data.pop('tags')
-		Product.objects.filter(pk=instance.pk).update(**validated_data)
-		instance.nutrition_facts.all().delete()
-		for nutrition_fact in nutrition_facts:
-			NutritionFact.objects.create(product=instance, **nutrition_fact)
-		for tag in instance.tags.all():
-			instance.tags.remove(tag)
-		for tag in tags:
-			instance.tags.add(tag)
-		return instance		
-
-	def get_complete(self, obj):
-		return obj.get_complete()
-
-	def get_queryset(self):
-		return Product.objects.filter(confirmed=True)
 
 	class Meta:
 		model = Product
-		fields = ('url', 'quanity_as_listed', 'complete', 'tags', 'tags_readonly', 'nutrition_facts', 'price', 'name')
-
-
-class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
-
-	class Meta:
-		model = Product
-		fields = ('url', 'quanity_as_listed', 'tags', 'price', 'name', 'id', 'quanity_needed')
+		fields = ('url', 'quanity_as_listed', 'tags', 'price', 'name', 'id', 'quanity_needed', 'quantity', 'max_quantity')
 
 
 class TagHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):

@@ -7,7 +7,9 @@ var mealAppNutrients = angular.module(
 
 
 mealAppNutrients.controller('NutrientController', function($scope, Nutrient){
-	$scope.page_info = {};
+	$scope.page_info = {
+		'nutrients': Nutrient.get() 
+	};
 
 });
 

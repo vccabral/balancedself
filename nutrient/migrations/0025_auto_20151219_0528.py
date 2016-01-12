@@ -53,7 +53,8 @@ def add_conversion_factors(apps, schema_editor):
 		("Cantaloupe", Decimal(3.99), "1 Cantaloupe"),
 		("Tangerine", Decimal(3.99), "5 lbs"),
 		("Figs", Decimal(100.00), "6 ounces"),
-		("Oranges", Decimal(1.0), "1 Orange")
+		("Oranges", Decimal(1.0), "1 Orange"),
+		("Canned Sockeye Salmon", Decimal(4.51), "1 Package of Salmon")
 	]
 
 	conversion_factor_db = {
@@ -80,7 +81,8 @@ def add_conversion_factors(apps, schema_editor):
 		'4 Limes': 0.67*4, 
 		'198 grams': 1.98, 
 		'18 Eggs': 0.5*18, 
-		'226 grams': 2.26
+		'226 grams': 2.26,
+		'1 Package of Salmon': 0.56
 	}
 
 	for product_name, price, package_size in product_info:

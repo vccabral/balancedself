@@ -1,30 +1,57 @@
 <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-12">
         <h1 ng-cloak>{{ page_info.message }}</h1>
-        {{constraint }}
-        Nutrition Standard: <select ng-change="findOptimalMealPlan()" class="btn btn-default dropdown-toggle" type='button' ng-cloak ng-model="page_info.selected_standard">
-            <option ng-value="standard.id" ng-repeat="standard in page_info.standards.results">
-                {{ standard.name }}
-            </option>
-        </select>
-        <select ng-change="findOptimalMealPlan()" ng-model="page_info.selected_span" class="btn btn-default dropdown-toggle">
-            <option value='day'>Daily</option>
-            <option selected value='week'>Weekly</option>
-            <option value='biweekly'>Two Weeks</option>
-            <option value='monthly'>Monthly</option>
-        </select>
-
-        <br/>
-        <br/>
-
-        {{ page_info.mealplan.nutrition_info_line_items[2].total/7*9 + page_info.mealplan.nutrition_info_line_items[3].total/7*4 + page_info.mealplan.nutrition_info_line_items[6].total/7*4 }}
+        <div class="row">
+            <div class="col-md-3">
+                Nutrition Standard: 
+            </div>
+            <div class="col-md-9">
+                <select 
+                    class="form-control"
+                    ng-cloak 
+                    ng-model="page_info.selected_standard"
+                >
+                    <option ng-value="standard.id" ng-repeat="standard in page_info.standards.results">
+                        {{ standard.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                Mealspan Plan: 
+            </div>
+            <div class="col-md-9">
+                <select 
+                    class="form-control"
+                    ng-cloak 
+                    ng-model="page_info.selected_span"
+                >
+                    <option ng-value="span" ng-repeat="span in page_info.spans">
+                        {{ span }} day(s)
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 text-right" >
+        <p>
+            <br/>
+            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
+        </p>
+    </div>
+</div>
+<br/>
+<div class="row">
+    <div class="col-md-6">
         <table class='table'>
             <tr>
                 <td>#</td>
                 <td>Nutrient</td>
+                <td>Unit</td>
                 <td>Min.</td>
                 <td>Max.</td>
-                <td ng-show="page_info.mealplan.success">My&nbsp;Plan</td>
+                <td>My&nbsp;Plan</td>
             </tr>
             <tr ng-repeat="constraint in page_info.standard_constraints">
                 <td>
@@ -34,32 +61,80 @@
                     {{ constraint.nutrient.name }}
                 </td>
                 <td>
-                    <input ng-change="findOptimalMealPlan()" ng-model="constraint.quantity" class="col-xs-6 input-sm"/>&nbsp;&nbsp;{{ constraint.nutrient.unit.name }}/day
+                    {{ constraint.nutrient.unit.name }}
                 </td>
                 <td>
-                    <input ng-change="findOptimalMealPlan()" ng-model="constraint.max_quantity" class="col-xs-6 input-sm"/>&nbsp;&nbsp;
-                    {{ constraint.nutrient.unit.name }}/day
+                    <form>
+                      <div class="form-group">
+                        <input 
+                        class="form-control"
+                        ng-model="constraint.quantity" 
+                        />
+                      </div>
+                    </form>
                 </td>
-                <td ng-show="page_info.mealplan.success">
-                    <span ng-if="page_info.selected_span=='day'">
-                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total | number:3 }}{{ constraint.nutrient.unit.name }}/day
-                    </span>
-                    <span ng-if="page_info.selected_span=='week'">
-                    <span ng-if="((page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 - constraint.quantity)/constraint.quantity) < 0.1">
-                    {{ (page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 - constraint.quantity)/constraint.quantity }}<br/>
-                    </span>
+                <td>
+                    <form>
+                      <div class="form-group">
+                        <input 
+                        class="form-control"
+                        ng-model="constraint.max_quantity" 
+                        />
+                      </div>
+                    </form>
+                </td>
+                <td>
                     <span>
-                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/7 | number:'2' }}
+                        {{ page_info.mealplan.nutrition_info_line_items[constraint.nutrient.id].total/page_info.selected_span | number:'2' }}
                     </span>
                     </span>
                 </td>
             </tr>
         </table>
-
-        <br/><br/>
-
     </div>
-    <div class="col-md-5">
+    <div class="col-md-6">
+        <table class='table'>
+            <tr>
+                <td>#</td>
+                <td>Product</td>
+                <td>Min.</td>
+                <td>Max.</td>
+            </tr>
+            <tr ng-repeat="product in page_info.products.results">
+                <td>
+                    {{ $index+1 }}
+                </td>
+                <td>
+                    {{ product.name }}
+                </td>
+                <td>
+                    <form class="form-inline">
+                      <div class="form-group">
+                        <input 
+                            class="form-control"
+                            ng-model="product.quantity" 
+                            class="col-xs-4 input-sm"
+                        />
+                      </div>
+                    </form>
+                </td>
+                <td>
+                    <form class="form-inline">
+                      <div class="form-group">
+                        <input 
+                            class="form-control"
+                            ng-model="product.max_quantity" 
+                            class="col-xs-4 input-sm"
+                        />
+                      </div>
+                    </form>
+                </td>
+            </tr>
+        </table>        
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
         <h1>Meal Plan</h1>
         <p ng-if="page_info.mealplan">
             <h4>Optimal Meal Plan</h4>
@@ -109,32 +184,34 @@
     </div>
 </div>
 <div class="row">
-    <table class="table table-bordered table-condensed">
-        <tr>
-            <td>
-                Nutrient
-            </td>
-            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                {{ lineitem.name }}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                #
-            </td>
-            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                {{ lineitem.product_quantity }}
-            </td>
-        </tr>
-        <tr ng-repeat="constraint in page_info.standard_constraints">
-            <td>
-                {{ constraint.nutrient.name }}
-            </td>
-            <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                {{ (lineitem.nutrition_info[constraint.nutrient.id].package_size * lineitem.nutrition_info[constraint.nutrient.id].quantity / 7) | number:'2' }} 
-            </td>
-        </tr>
-    </table>
+    <div class="col-md-12">
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <td>
+                    Nutrient
+                </td>
+                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                    {{ lineitem.name }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    #
+                </td>
+                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                    {{ lineitem.product_quantity }}
+                </td>
+            </tr>
+            <tr ng-repeat="constraint in page_info.standard_constraints">
+                <td>
+                    {{ constraint.nutrient.name }}
+                </td>
+                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
+                    {{ lineitem.nutrient_totals[constraint.nutrient.id]/page_info.selected_span / constraint.quantity * 100.0 | number:'2' }}% 
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <style type="text/css">

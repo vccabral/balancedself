@@ -1,1 +1,24 @@
-TBD Standards
+<div class="row">
+    <div>
+        <h1 ng-cloak>{{ page_info.message }}</h1>
+
+        <table class='table'>
+            <tr>
+                <td>#</td>
+                <td>Nutrient</td>
+            </tr>
+            <tr ng-repeat="standard in (page_info.standards.results)">
+                <td>
+                    {{ $index+1 }}
+                </td>
+                <td>
+					{{ standard.name }}
+                </td>
+<!--                 <td>
+                    {{ standard.constraints_readonly }}
+                </td> -->
+            </tr>
+        </table>
+
+    </div>
+</div>

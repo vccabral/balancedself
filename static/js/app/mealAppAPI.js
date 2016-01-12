@@ -28,5 +28,5 @@ mealAppAPI.factory('Tag', function(api_url, $resource) {
 });
 
 mealAppAPI.factory('MealPlan', function(api_url, $resource) {
-	return $resource(api_url+"mealplan/:id")
+	return $resource(api_url+"mealplan2/:id")
 });
