@@ -23,51 +23,7 @@ for model in models_list:
 		admin.site.register(model)
 	except:
 		pass
-
-# class NutritionFactInline(admin.TabularInline):
-# 	model = models.NutritionFact
-# 	def get_extra(self, request, obj=None, **kwargs):
-# 		if obj:
-# 			return models.Nutrient.objects.all().count() - obj.nutrition_facts.all().count()	
-# 		return models.Nutrient.objects.all().count()
-# 	def get_formset(self, request, obj=None, **kwargs):
-# 		initial = []
-# 		if request.method == "GET":
-# 			for nutrient in models.Nutrient.objects.all():
-# 				initial.append({
-# 					'quantity': 0,
-# 					'nutrient': nutrient
-# 				})
-# 		formset = super(NutritionFactInline, self).get_formset(request, obj, **kwargs)
-# 		formset.__init__ = curry(formset.__init__, initial=initial)
-# 		return formset
-
-# @admin.register(models.Product)
-# class ProductAdmin(admin.ModelAdmin):
-# 	inlines = [NutritionFactInline]
-
-# class ConstraintInline(admin.TabularInline):
-# 	model = models.Constraint
-# 	def get_extra(self, request, obj=None, **kwargs):
-# 		if obj:
-# 			return models.Nutrient.objects.all().count() - obj.constraints.all().count()	
-# 		return models.Nutrient.objects.all().count()
-# 	def get_formset(self, request, obj=None, **kwargs):
-# 		initial = []
-# 		if request.method == "GET":
-# 			for nutrient in models.Nutrient.objects.all():
-# 				initial.append({
-# 					'quantity': 0,
-# 					'nutrient': nutrient
-# 				})
-# 		formset = super(ConstraintInline, self).get_formset(request, obj, **kwargs)
-# 		formset.__init__ = curry(formset.__init__, initial=initial)
-# 		return formset
-
-
-# @admin.register(models.Standard)
-# class StandardAdmin(admin.ModelAdmin):
-# 	inlines = [ConstraintInline]
+		
 
 class HomePageView(TemplateView):
     template_name = "index.html"
@@ -90,8 +46,7 @@ urlpatterns = [
 	url(r'^$', HomePageView.as_view(), name='home'),
 	url(r'^accounts/profile/$', RedirectView.as_view(url='/'), name='before_home'),
 	url(r'^api/v1/', include(router.urls)),
-	url(r'^api/v1/mealplan/$', views.MealPlanAPIView.as_view(), name='mealplan'),
-	url(r'^api/v1/mealplan2/$', views.CustomMealPlanAPIView.as_view(), name='mealplan2'),
+	url(r'^api/v1/mealplan/$', views.CustomMealPlanAPIView.as_view(), name='mealplan'),
 	url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 	url(r'^admin/', include(admin.site.urls)),
 ]
