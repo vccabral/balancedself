@@ -98,7 +98,7 @@ class CustomMealPlan(object):
 
 	def get_product_min(self, product, span):
 		listed_quantity = self.request.GET.get("product_"+str(product.pk)+"_low", None)
-		return int(listed_quantity) * span if listed_quantity else 0
+		return float(listed_quantity) * span / 7.0 if listed_quantity else 0
 
 	def get_product_max(self, product, span):
 		listed_quantity = self.request.GET.get("product_"+str(product.pk)+"_high", None)
