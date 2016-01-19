@@ -97,6 +97,8 @@
             <tr>
                 <td>#</td>
                 <td>Product</td>
+                <td>Size</td>
+                <td>Span</td>
                 <td>Min.</td>
                 <td>Max.</td>
             </tr>
@@ -108,32 +110,48 @@
                     {{ product.name }}
                 </td>
                 <td>
-                    <form class="form-inline">
-                      <div class="form-group">
-                        <input 
-                            class="form-control"
-                            ng-model="product.quantity" 
-                            class="col-xs-4 input-sm"
-                        />
-                      </div>
-                    </form>
+                    {{ product.quanity_as_listed | number:1 }}&nbsp;grams <br/>
+                    {{ product.quanity_as_listed * 0.00220462 | number:1 }}&nbsp;lbs <br/>
                 </td>
                 <td>
-                    <form class="form-inline">
-                      <div class="form-group">
-                        <input 
-                            class="form-control"
-                            ng-model="product.max_quantity" 
-                            class="col-xs-4 input-sm"
-                        />
-                      </div>
-                    </form>
+                    <select 
+                        ng-cloak 
+                        ng-model="product.custom_span"
+                        ng-init="product.custom_span='2'"
+                    >
+                        <option value="0">None</option>
+                        <option value="1">Entire Period</option>
+                        <option value="2">Weekly</option>
+                        <option value="3">Daily</option>
+                    </select>
+                </td>
+                <td class="col-xs-2">
+                  <div class="form-group">
+                    <input 
+                        class="form-control"
+                        ng-model="product.quantity" 
+                    />
+                  </div>
+                </td>
+                <td class="col-xs-2">
+                  <div class="form-group">
+                    <input 
+                        class="form-control"
+                        ng-model="product.max_quantity" 
+                    />
+                  </div>
                 </td>
             </tr>
         </table>        
     </div>
 </div>
 <div class="row">
+    <div class="col-md-12 text-right" >
+        <p>
+            <br/>
+            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
+        </p>
+    </div>
     <div class="col-md-12">
         <h1>Meal Plan</h1>
         <p ng-if="page_info.mealplan">
@@ -155,7 +173,7 @@
                         <td>Price</td>
                         <td>Total</td>
                     </tr>
-                    <tr ng-repeat="lineitem in page_info.mealplan.product_line_items | orderBy:'-product_quantity'">
+                    <tr ng-repeat="lineitem in page_info.mealplan.product_line_items | orderBy:'-product_quantity'" ng-show="lineitem.product_quantity">
                         <td>
                             {{ lineitem.name }}
                             {{ lineitem.product_package_size }}
@@ -175,7 +193,8 @@
                             Total
                         </td>
                         <td>
-                            {{ page_info.mealplan.product_total | currency }}
+                            {{ page_info.mealplan.product_total | currency }}<br/>
+                            {{ page_info.mealplan.product_total / page_info.selected_span | currency }} / days
                         </td>
                     </tr>
                 </table>

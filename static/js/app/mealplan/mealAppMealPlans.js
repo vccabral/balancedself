@@ -38,10 +38,30 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			params['nutrient_'+d.nutrient.id+'_high'] = d.max_quantity;
 		}
 
+		var get_multiplier = function(k, span){
+			if(k=='1'){
+				return 1.0 / span;
+			}
+			else if(k=='2'){
+				return 4.0 / span;
+			}
+			else if(k=='3'){
+				return span / 4.0;
+			}
+			else if(k=='0'){
+				return 0;
+			}
+			else{
+				return 1;
+			}
+		}
+
 		for(var i=0;i<$scope.page_info.products.results.length;i++){
 			var d = $scope.page_info.products.results[i];
-			params['product_'+d.id+'_low'] = d.quantity;
-			params['product_'+d.id+'_high'] = d.max_quantity;
+			var custom_span = $scope.page_info.products.results[i].custom_span;
+			var span_multiplier = get_multiplier(custom_span, $scope.page_info.selected_span);
+			params['product_'+d.id+'_low'] = d.quantity * span_multiplier;
+			params['product_'+d.id+'_high'] = d.max_quantity * span_multiplier;
 		}
 
 		$scope.page_info.mealplan = MealPlan.get(params, function(mealplan){
