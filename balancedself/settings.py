@@ -23,10 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '^1($+&t3i9_iui9@$_(x!cc^6!xxxf*fr2kh@drt50^!+yqg_h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ.get("ON_HEROKU", "False") == "True":
-    DEBUG = False
-else:
+if os.environ.get("DEBUG", "True") == "True":
     DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     'debug_toolbar',
     'crispy_forms',
+    'django_extensions',
 )
 
 REST_FRAMEWORK = {
