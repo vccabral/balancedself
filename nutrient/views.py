@@ -234,9 +234,8 @@ class CustomMealPlan(object):
 					for nutrient in nutrients:
 						total = 0 
 						for product, x in zip(products, prob.variables()):
-							if product.nutrition_facts.all().filter(nutrient=nutrient).exists():
-								quantity = product.nutrition_facts.all().filter(nutrient=nutrient)[0].quantity
-								total = total + float(quantity) * float(x.varValue)
+							quantity = nutrient_facts_dict[nutrient.id]
+							total = total + float(quantity) * float(x.varValue)
 						result['nutrition_info_line_items'][nutrient.pk] = {
 							"name": nutrient.name,
 							"total": total
