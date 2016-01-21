@@ -106,7 +106,7 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			}
 		}
 
-		$scope.page_info.mealplan = MealPlan.get(params, function(mealplan){
+		$scope.page_info.mealplan = MealPlan.save(params, function(mealplan){
 			$scope.page_info.getting_meal_plan = false;
 			$scope.page_info.failed_to_find_meal = !mealplan.success;
 		});

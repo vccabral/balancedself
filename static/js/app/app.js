@@ -10,9 +10,12 @@ var mealApp = angular.module(
 	]
 );
 
-mealApp.config(function($routeProvider, $locationProvider){
+mealApp.config(function($routeProvider, $locationProvider, $httpProvider){
     $routeProvider
     .otherwise({
         redirectTo: '/mealplans'
     });
+
+	$httpProvider.defaults.xsrfCookieName = 'csrftoken';
+	$httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 });

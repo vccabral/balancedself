@@ -14,6 +14,7 @@ from decimal import *
 from pulp import LpProblem, LpVariable, LpMinimize, lpSum
 from rest_framework import filters
 from rest_framework import generics
+from django.forms.models import model_to_dict
 
 
 class StandardFilter(django_filters.FilterSet):
@@ -88,37 +89,36 @@ class CustomMealPlan(object):
 	def __init__(self, request):
 		self.request = request
 
+	def get_listed_quantity(self, key_name, default_val):
+		if key_name in self.request.DATA:
+			return self.request.DATA[key_name]
+		elif key_name in self.request.POST:
+			return self.request.POST[key_name]
+		else:
+			return self.request.GET.get(key_name, default_val)
+
 	def get_nutrient_min(self, nutrient, span):
-		listed_quantity = float(self.request.GET.get("nutrient_"+str(nutrient.pk)+"_low", 0))
+		listed_quantity = float(self.get_listed_quantity("nutrient_"+str(nutrient.pk)+"_low", 0))
 		return - listed_quantity * span
 
 	def get_nutrient_max(self, nutrient, span):
-		listed_quantity = self.request.GET.get("nutrient_"+str(nutrient.pk)+"_high", None)
+		listed_quantity = self.get_listed_quantity("nutrient_"+str(nutrient.pk)+"_high", None)
 		return float(listed_quantity) * span if listed_quantity else None
 
 	def get_product_min(self, product, span):
-		listed_quantity = self.request.GET.get("product_"+str(product['id'])+"_low", None)
+		listed_quantity = self.get_listed_quantity("product_"+str(product['id'])+"_low", None)
 		return float(listed_quantity) * span / 7.0 if listed_quantity else 0
 
 	def get_product_max(self, product, span):
-		listed_quantity = self.request.GET.get("product_"+str(product['id'])+"_high", None)
+		listed_quantity = self.get_listed_quantity("product_"+str(product['id'])+"_high", None)
 		return float(listed_quantity) * span if listed_quantity else None
 
 	def calculate_maximum_plan(self):
 		result = {}
-		must_haves = self.request.GET.getlist('must_haves', [])
-		must_not_haves = self.request.GET.getlist('must_not_haves', [])
-		span = int(self.request.GET.get("span", 7))
+		span = int(self.get_listed_quantity("span", 7))
 
-		prod_start_object_list = Product.objects
-
-		if must_haves:
-			product_list = prod_start_object_list.filter(confirmed=True, tags__pk__in=must_haves).exclude(tags__pk__in=must_not_haves)
-		else:
-			product_list = prod_start_object_list.filter(confirmed=True).exclude(tags__pk__in=must_not_haves)
-
+		product_list = Product.objects.filter(confirmed=True)
 		products_queryset = product_list.prefetch_related("nutrition_facts__nutrient")
-		from django.forms.models import model_to_dict
 
 		products = [
 			(
@@ -255,7 +255,14 @@ class CustomMealPlan(object):
 
 
 class CustomMealPlanAPIView(APIView):
+
 	def get(self, request, *args, **kw):
+		mealplan = CustomMealPlan(request)
+		result = mealplan.calculate_maximum_plan()
+		response = Response(result, status=status.HTTP_200_OK)
+		return response
+
+	def post(self, request, *args, **kw):
 		mealplan = CustomMealPlan(request)
 		result = mealplan.calculate_maximum_plan()
 		response = Response(result, status=status.HTTP_200_OK)
