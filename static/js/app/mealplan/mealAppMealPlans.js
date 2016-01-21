@@ -6,22 +6,54 @@ var mealAppMealPlans = angular.module(
 );
 
 mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, Product, $timeout, $interval) {
+
+	$scope.should_show_product = function(product){
+		var found_all_required = true;
+		if($scope.page_info.required_tags.$resolved){
+			for(var lcv=0;lcv<$scope.page_info.required_tags.results.length;lcv++){
+				if($scope.page_info.required_tags.results[lcv].selected){
+					var product_tag_lcv = 0;
+					var tag_name = $scope.page_info.required_tags.results[lcv].name;
+					while(product_tag_lcv < product.tags.length && tag_name != product.tags[product_tag_lcv].name){product_tag_lcv++;}
+					found_all_required = found_all_required && product_tag_lcv < product.tags.length;
+				}
+			}
+		}
+
+		var does_not_contain_exclude = true;
+		if($scope.page_info.exclude_tags.$resolved){
+			for(var lcv=0;lcv<$scope.page_info.exclude_tags.results.length;lcv++){
+				if($scope.page_info.exclude_tags.results[lcv].selected){
+					var product_tag_lcv = 0;
+					var tag_name = $scope.page_info.exclude_tags.results[lcv].name;
+					while(product_tag_lcv < product.tags.length && tag_name != product.tags[product_tag_lcv].name){product_tag_lcv++;}
+					does_not_contain_exclude = does_not_contain_exclude && product_tag_lcv == product.tags.length;
+				}
+			}
+		}
+
+		var has_one_desired_trait = true;
+		if($scope.page_info.desired_tags.$resolved){
+			var has_one_desired_trait = false;
+			var desired_tags = [];
+			for(var lcv=0;lcv<$scope.page_info.desired_tags.results.length;lcv++){
+				if($scope.page_info.desired_tags.results[lcv].selected){
+					desired_tags.push($scope.page_info.desired_tags.results[lcv].name);
+				}
+			}
+			var lcv = 0;
+			while(lcv < product.tags.length && desired_tags.indexOf(product.tags[lcv].name)==-1){lcv++;}
+			has_one_desired_trait = lcv < product.tags.length;
+		}
+
+		return found_all_required && does_not_contain_exclude && has_one_desired_trait;
+	}
 	$scope.greaterThan = function(prop, val){
 	    return function(item){
 			return item[prop] > val;
 	    }
 	};
 
-	var findOptimalMealPlanClicks = 0;
-	var findOptimalMealPlanLastClicks = 0;
-	$interval(5000, function(){
-		if(findOptimalMealPlanClicks!=0){
-			if(findOptimalMealPlanLastClicks == findOptimalMealPlanClicks){
-				findOptimalMealPlanClicks = 0;
-				findOptimalMealPlanLastClicks = 0;
-			}
-		}
-	});
 	$scope.findOptimalMealPlanBrains = function(){
 		$scope.page_info.getting_meal_plan = true;
 		$scope.page_info.failed_to_find_meal = false;
@@ -39,17 +71,20 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		}
 
 		var get_multiplier = function(k, span){
-			if(k=='1'){
+			if(k=='0'){
+				return 0;
+			}
+			else if(k=='1'){
 				return 1.0 / span;
 			}
 			else if(k=='2'){
-				return 4.0 / span;
+				return 1.0;
 			}
 			else if(k=='3'){
-				return span / 4.0;
+				return 1.0 / 7.0;
 			}
-			else if(k=='0'){
-				return 0;
+			else if(k=='4'){
+				return 1.0 / 30.0;
 			}
 			else{
 				return 1;
@@ -60,8 +95,15 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			var d = $scope.page_info.products.results[i];
 			var custom_span = $scope.page_info.products.results[i].custom_span;
 			var span_multiplier = get_multiplier(custom_span, $scope.page_info.selected_span);
-			params['product_'+d.id+'_low'] = d.quantity * span_multiplier;
-			params['product_'+d.id+'_high'] = d.max_quantity * span_multiplier;
+			var product_allowed = $scope.should_show_product($scope.page_info.products.results[i]);
+
+			if(product_allowed){
+				params['product_'+d.id+'_low'] = d.quantity * span_multiplier;
+				params['product_'+d.id+'_high'] = d.max_quantity * span_multiplier;
+			}else{
+				params['product_'+d.id+'_low'] = 0;
+				params['product_'+d.id+'_high'] = 0;
+			}
 		}
 
 		$scope.page_info.mealplan = MealPlan.get(params, function(mealplan){
@@ -70,22 +112,19 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		});
 	};
 	$scope.findOptimalMealPlan = function(){
-		findOptimalMealPlanClicks = findOptimalMealPlanClicks + 1;
-		$timeout(function(){
-			findOptimalMealPlanClicks = findOptimalMealPlanClicks - 1;
-			if(findOptimalMealPlanClicks==0){
-				$scope.findOptimalMealPlanBrains();
-			}
-		}, 1000);
-	}
-	var setMeal = function(index){
-		$scope.page_info.selected_standard_name = $scope.page_info.standards.results[index].name;
-		$scope.page_info.standard_constraints = angular.copy($scope.page_info.standards.results[index].constraints_readonly);
+		$scope.findOptimalMealPlanBrains();
 	};
+	$scope.setMeal = function(){
+		$scope.page_info.standard_constraints = angular.copy($scope.page_info.standards.results[$scope.page_info.selected_standard-1].constraints_readonly);
+	};
+
 	$scope.page_info = {
 		'message': 'Design your Diet',
 		'standards': Standard.get(),
 		'tags': Tag.get(),
+		'required_tags': Tag.get(),
+		'desired_tags': Tag.get(),
+		'exclude_tags': Tag.get(),
 		'products': Product.get(),
 		'selected_standard': 0,
 		'must_haves': [],
@@ -103,51 +142,6 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		'selection_options': [{ "value": 'day', "text": "Daily" }, { "value": 'week', "text": "Weekly" }],
 		'spans': [7,14,21,28,31,60,90,365]
 	};
-	$scope.$watch(function(scope){
-			return scope.page_info.selected_standard
-		},
-		function(newValue, oldValue){
-			if(newValue!=0){
-				var index = 0;
-				while($scope.page_info.standards.results[index].id != newValue){
-					index = index + 1;
-				}
-				setMeal(index);
-			}
-		}
-	);
-
-	$scope.$watch(function(scope){
-			return scope.page_info.must_haves
-		},
-		function(newValue, oldValue){
-			var new_must_haves = [];
-			for(var indexOfValue = 0;indexOfValue<newValue.length;indexOfValue++){
-				var tag_index = 0;
-				while($scope.page_info.tags.results[tag_index].id != newValue[indexOfValue]){
-					tag_index = tag_index + 1;
-				}
-				new_must_haves.push($scope.page_info.tags.results[tag_index].name);
-			}
-			$scope.page_info.must_haves_name = new_must_haves;
-		}
-	);
-
-	$scope.$watch(function(scope){
-			return scope.page_info.must_not_haves
-		},
-		function(newValue, oldValue){
-			var new_must_not_haves = [];
-			for(var indexOfValue = 0;indexOfValue<newValue.length;indexOfValue++){
-				var tag_index = 0;
-				while($scope.page_info.tags.results[tag_index].id != newValue[indexOfValue]){
-					tag_index = tag_index + 1;
-				}
-				new_must_not_haves.push($scope.page_info.tags.results[tag_index].name);
-			}
-			$scope.page_info.must_not_haves_name = new_must_not_haves;
-		}
-	);
 });
 
 

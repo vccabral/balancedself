@@ -59,7 +59,7 @@ class NutrientHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer)
 
 
 class ProductHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
-
+	tags = TagModelSerializer(many=True)
 	class Meta:
 		model = Product
 		fields = ('url', 'quanity_as_listed', 'tags', 'price', 'name', 'id', 'quanity_needed', 'quantity', 'max_quantity')
