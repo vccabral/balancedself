@@ -26,7 +26,7 @@ def add_product_tags(apps, schema_editor):
 	]
 
 	for product in product_raw_list:
-		prod = Product.objects.get(name=product[0])
+		prod = Product.objects.get(name=product[0].upper())
 		tags_for_me = []
 		for tag_index in product[1]:
 			tag = Tag.objects.get(name=tags[tag_index])

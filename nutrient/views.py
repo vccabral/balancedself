@@ -107,18 +107,15 @@ class CustomMealPlan(object):
 
 	def get_product_min(self, product, span):
 		listed_quantity = self.get_listed_quantity("product_"+str(product['id'])+"_low", None)
-		return float(listed_quantity) * span / 7.0 if listed_quantity else 0
+		return float(listed_quantity) * span if listed_quantity else 0
 
 	def get_product_max(self, product, span):
 		listed_quantity = self.get_listed_quantity("product_"+str(product['id'])+"_high", None)
 		return float(listed_quantity) * span if listed_quantity else None
 
-	def calculate_maximum_plan(self):
-		result = {}
-		span = int(self.get_listed_quantity("span", 7))
-
+	def get_product_list(self):
 		product_list = Product.objects.filter(confirmed=True)
-		products_queryset = product_list.prefetch_related("nutrition_facts__nutrient")
+		products_queryset = product_list.prefetch_related("nutrition_facts__nutrient").order_by("id")
 
 		products = [
 			(
@@ -129,70 +126,94 @@ class CustomMealPlan(object):
 				}
 			) for product in products_queryset
 		]
+		return products
 
-		nutrients = list(Nutrient.objects.all())
+	def get_nutrients(self):
+		return list(Nutrient.objects.all())
 
-		if len(product_list) == 0:
+	def create_c(self, products):
+		return map(float, map(lambda product: product[0]['price'], products))
+
+	def create_b(self, nutrients, number_of_maximums_provided, span):
+		b = np.zeros((len(nutrients)+number_of_maximums_provided,))
+		i = 0 
+		for nutrient in nutrients:
+			b[i] = self.get_nutrient_min(nutrient, span)
+			i = i + 1
+			tmp = self.get_nutrient_max(nutrient, span)
+			if tmp:
+				b[i] = tmp
+				i = i + 1
+		return b
+
+	def create_A(self, nutrients, products, number_of_maximums_provided, span):
+		A = np.zeros((len(nutrients)+number_of_maximums_provided, len(products)))
+		i = 0
+		for nutrient in nutrients:
+			tmp = self.get_nutrient_max(nutrient, span)
+
+			for j, (product, nutrient_facts_dict) in enumerate(products):
+				A[i][j] = - nutrient_facts_dict[nutrient.id]
+			i = i + 1
+
+			if tmp:
+				for j, (product, nutrient_facts_dict) in enumerate(products):
+					A[i][j] = nutrient_facts_dict[nutrient.id]
+				i = i + 1
+
+		return A
+
+	def get_x_name_from_product(self, product):
+		return "x_"+str(product['name']).replace (" ", "_")
+
+	def create_x(self, products, span):
+		return [LpVariable(
+			self.get_x_name_from_product(product), 
+			self.get_product_min(product, span),
+			self.get_product_max(product, span),
+			cat='Integer'
+			) for (product, fact) in products]
+
+	def get_linear_program_solution(self, c, b, A, x):
+		prob = LpProblem("myProblem", LpMinimize)
+		prob += lpSum([xp*cp for xp, cp in zip(x, c)]), "Total Cost of Ingredients per can" 
+
+		for row, cell in zip(A, b):
+			prob += lpSum(ap*xp for ap, xp in zip(row,  x)) <= cell
+
+		solved = prob.solve()
+		return prob
+
+
+	def calculate_maximum_plan(self):
+		result = {}
+		span = int(self.get_listed_quantity("span", 7))
+		products = self.get_product_list()
+		nutrients = self.get_nutrients()
+
+		if len(products) == 0:
 			result['success'] = False
-
 		else:
 			try:
-				max_count = sum(1 if self.get_nutrient_max(nutrient, span) else 0 for nutrient in nutrients)
+				number_of_maximums_provided = sum(1 if self.get_nutrient_max(nutrient, span) else 0 for nutrient in nutrients)
 
-				print("initializing c")
-				c = map(float, map(lambda product: product[0]['price'], products))
-				print("initializing b")
-				b = np.zeros((len(nutrients)+max_count,))
-				print("initializing A")
-				A = np.zeros((len(nutrients)+max_count, len(products)))
+				c = self.create_c(products)
+				b = self.create_b(nutrients, number_of_maximums_provided, span)
+				A = self.create_A(nutrients, products, number_of_maximums_provided, span)
+				x = self.create_x(products, span)
 
-				print("filling array b")
-				i = 0 
-				for nutrient in nutrients:
-					b[i] = self.get_nutrient_min(nutrient, span)
-					i = i + 1
-					tmp = self.get_nutrient_max(nutrient, span)
-					if tmp:
-						b[i] = tmp
-						i = i + 1
-				print(b)
-
-				print("filling matrix A")
-				i = 0
-				for nutrient in nutrients:
-					tmp = self.get_nutrient_max(nutrient, span)
-
-					for j, (product, nutrient_facts_dict) in enumerate(products):
-						A[i][j] = - nutrient_facts_dict[nutrient.id]
-					i = i + 1
-
-					if tmp:
-						for j, (product, nutrient_facts_dict) in enumerate(products):
-							A[i][j] = nutrient_facts_dict[nutrient.id]
-						i = i + 1
-				print(A)
+				prob = self.get_linear_program_solution(c, b, A, x)
 
 
-				prob = LpProblem("myProblem", LpMinimize)
-
-				print("filling matrix x")
-				x = [LpVariable(
-						"x_"+str(product['name']), 
-						self.get_product_min(product, span),
-						self.get_product_max(product, span),
-						cat='Integer'
-					) for (product, fact) in products]
-				print(x)
-
-
-				print("initializing matrix cost")
-				prob += lpSum([xp*cp for xp, cp in zip(x, c)]), "Total Cost of Ingredients per can" 
-				for row, cell in zip(A, b):
-					prob += lpSum(ap*xp for ap, xp in zip(row,  x)) <= cell
-				print(prob)
-
-				solved = prob.solve()
-
+				solution_variables = []
+				for product, nutrient_facts_dict in products:
+					x_name = self.get_x_name_from_product(product)
+					for x_var in prob.variables():
+						if str(x_var) == x_name:
+							solution_variables.append(x_var)
+							break
+					else:
+						print("no one found for: ", x_name)
 
 				if len(prob.variables()) != 0:
 					result['success'] = prob.status == 1
@@ -200,6 +221,7 @@ class CustomMealPlan(object):
 						result['reason'] = "we found a match"
 					else:
 						result['reason'] = "problem is unsolvable: "+str(prob.status)
+
 					result['product_line_items'] = [
 						{
 							'name': product['name'],
@@ -211,20 +233,21 @@ class CustomMealPlan(object):
 								nutrient.id: float(quantity.varValue) * float(nutrient_facts_dict[nutrient.id])
 								for nutrient in nutrients
 							}
-						} for (product, nutrient_facts_dict), quantity, cost in zip(products, prob.variables(), c)
+						} for (product, nutrient_facts_dict), quantity, cost in zip(products, solution_variables, c)
 					]
 					result['nutrition_info_line_items'] = {}
 					for nutrient in nutrients:
 						total = 0 
-						for (product, nutrient_facts_dict), x in zip(products, prob.variables()):
+						for (product, nutrient_facts_dict), x in zip(products, solution_variables):
 							quantity = nutrient_facts_dict[nutrient.id]
+
 							total = total + float(quantity) * float(x.varValue)
-						result['nutrition_info_line_items'][nutrient.pk] = {
+						result['nutrition_info_line_items'][nutrient.id] = {
 							"name": nutrient.name,
 							"total": total
 						}
 
-					result['cost'] = sum([cp*xp.varValue for cp, xp in zip(c, prob.variables())])
+					result['cost'] = sum([cp*xp.varValue for cp, xp in zip(c, solution_variables)])
 					result['product_total'] = reduce(lambda x, y:x+y['price']*y['product_quantity'], result['product_line_items'], 0)
 					return result
 				else:
@@ -233,7 +256,7 @@ class CustomMealPlan(object):
 					result['nutrition_info_line_items'] = {}
 					for nutrient in nutrients:
 						total = 0 
-						for product, x in zip(products, prob.variables()):
+						for product, x in zip(products, solution_variables):
 							quantity = nutrient_facts_dict[nutrient.id]
 							total = total + float(quantity) * float(x.varValue)
 						result['nutrition_info_line_items'][nutrient.pk] = {
@@ -241,7 +264,7 @@ class CustomMealPlan(object):
 							"total": total
 						}
 
-					result['cost'] = sum([cp*xp.varValue for cp, xp in zip(c, prob.variables())])
+					result['cost'] = sum([cp*xp.varValue for cp, xp in zip(c, solution_variables)])
 					result['product_total'] = reduce(lambda x, y:x+y['price']*y['product_quantity'], result['product_line_items'], 0)
 
 				return result

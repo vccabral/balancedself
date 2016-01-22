@@ -71,20 +71,20 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		}
 
 		var get_multiplier = function(k, span){
-			if(k=='0'){
+			if(k=='none'){
 				return 0;
 			}
-			else if(k=='1'){
+			else if(k=='entire'){ //works
 				return 1.0 / span;
 			}
-			else if(k=='2'){
+			else if(k=='daily'){ //works
 				return 1.0;
 			}
-			else if(k=='3'){
-				return 1.0 / 7.0;
+			else if(k=='weekly'){
+				return 1 / 7.0;
 			}
-			else if(k=='4'){
-				return 1.0 / 30.0;
+			else if(k=='monthly'){
+				return 1 / 28.0;
 			}
 			else{
 				return 1;
@@ -140,7 +140,7 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		'selected_span': 7,
 		'show_all_food': true,
 		'selection_options': [{ "value": 'day', "text": "Daily" }, { "value": 'week', "text": "Weekly" }],
-		'spans': [7,14,21,28,31,60,90,365]
+		'spans': [1,2,7,14,21,28,31,60,90,365]
 	};
 });
 

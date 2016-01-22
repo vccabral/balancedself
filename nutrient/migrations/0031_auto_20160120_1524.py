@@ -97,7 +97,7 @@ def add_product_tags(apps, schema_editor):
 		["cooked tail off",natural],
 		["wild Alaskian salmon",natural],
 		["raw sea scallops",natural],
-		["slides bacon",processed],
+		["slices bacon",processed],
 		["organic brown eggs",natural],
 		["large grade a eggs",processed],
 		["extra large eggs",processed],
@@ -114,7 +114,7 @@ def add_product_tags(apps, schema_editor):
 	]
 
 	for product in product_raw_list:
-		prod = Product.objects.get(name=product[0])
+		prod = Product.objects.get(name=product[0].upper())
 		tags_for_me = []
 		for tag_index in product[1]:
 			tag = Tag.objects.get(name=tags[tag_index])
