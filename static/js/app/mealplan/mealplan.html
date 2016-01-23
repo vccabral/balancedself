@@ -39,15 +39,15 @@
         </div>
         <div class="row">
             <div class="col-md-3">
-                Desired:
+                Exclude: No product with the selected tag will be included if they select them here. For example, if you select 'Diary' by clicking on it then NO products returned will have the dairy tag. Think of these as allergies or strong dislikes. 
             </div>
             <div class="col-md-9">
                 <span 
-                    ng-repeat="tag in page_info.desired_tags.results" 
+                    ng-repeat="tag in page_info.exclude_tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
                     ng-class="{'label-default': !tag.selected,'label-primary': tag.selected}"
-                    ng-init="tag.selected=true;"
+                    ng-init="tag.selected=false;"
                     ng-click="tag.selected=!tag.selected;"
                 >
                     {{ tag.name }}
@@ -59,7 +59,7 @@
         </div>
         <div class="row">
             <div class="col-md-3">
-                Required:
+                Required: Every product will have all of these. If you ONLY want products that are natural then click natural and every product returned will have to have the natural tag.
             </div>
             <div class="col-md-9">
                 <span 
@@ -79,15 +79,15 @@
         </div>
         <div class="row">
             <div class="col-md-3">
-                Exclude:
+                Desires: Any product shown to you will have at least one of these tag. If you want fruits, vegetables, and meats, you can select those tags by clicking on them and EVERY product return will be tagged with either fruit, vegetable or meat.
             </div>
             <div class="col-md-9">
                 <span 
-                    ng-repeat="tag in page_info.exclude_tags.results" 
+                    ng-repeat="tag in page_info.desired_tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
                     ng-class="{'label-default': !tag.selected,'label-primary': tag.selected}"
-                    ng-init="tag.selected=false;"
+                    ng-init="tag.selected=true;"
                     ng-click="tag.selected=!tag.selected;"
                 >
                     {{ tag.name }}

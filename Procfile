@@ -1,1 +1,1 @@
-web: gunicorn balancedself.wsgi --timeout 12222222222220 --log-file -
+web: gunicorn balancedself.wsgi --timeout 30 --log-file -
