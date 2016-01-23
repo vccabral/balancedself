@@ -111,7 +111,7 @@ class CustomMealPlan(object):
 
 	def get_product_max(self, product, span):
 		listed_quantity = self.get_listed_quantity("product_"+str(product['id'])+"_high", None)
-		return float(listed_quantity) * span if listed_quantity else None
+		return float(listed_quantity) * span if listed_quantity is not None else None
 
 	def get_product_list(self):
 		product_list = Product.objects.filter(confirmed=True)
@@ -203,7 +203,6 @@ class CustomMealPlan(object):
 				x = self.create_x(products, span)
 
 				prob = self.get_linear_program_solution(c, b, A, x)
-
 
 				solution_variables = []
 				for product, nutrient_facts_dict in products:
