@@ -5,7 +5,7 @@ var mealAppMealPlans = angular.module(
 	]
 );
 
-mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, Product, $timeout, $interval) {
+mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, Tag, MealPlan, Product, $timeout, $interval, $location, $anchorScroll) {
 
 	$scope.should_show_product = function(product){
 		var found_all_required = true;

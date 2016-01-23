@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" id="top">
     <div class="col-md-12">
         <h1 ng-cloak>{{ page_info.message }}</h1>
         <div class="row">
@@ -46,7 +46,7 @@
                     ng-repeat="tag in page_info.exclude_tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
-                    ng-class="{'label-default': !tag.selected,'label-primary': tag.selected}"
+                    ng-class="{'label-default': !tag.selected,'label-danger': tag.selected}"
                     ng-init="tag.selected=false;"
                     ng-click="tag.selected=!tag.selected;"
                 >
@@ -66,7 +66,7 @@
                     ng-repeat="tag in page_info.required_tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
-                    ng-class="{'label-default': !tag.selected,'label-primary': tag.selected}"
+                    ng-class="{'label-default': !tag.selected,'label-warning': tag.selected}"
                     ng-init="tag.selected=false;"
                     ng-click="tag.selected=!tag.selected;"
                 >
@@ -86,7 +86,7 @@
                     ng-repeat="tag in page_info.desired_tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
-                    ng-class="{'label-default': !tag.selected,'label-primary': tag.selected}"
+                    ng-class="{'label-default': !tag.selected,'label-success': tag.selected}"
                     ng-init="tag.selected=true;"
                     ng-click="tag.selected=!tag.selected;"
                 >
@@ -106,7 +106,8 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <table class='table'>
+        <h1 ng-cloak>Nutrients <button ng-init="page_info.show_nutrients=true;" ng-click="page_info.show_nutrients=!page_info.show_nutrients" type="button" class="btn btn-info">Show/Hide</button></h1>
+        <table class='table' ng-show="page_info.show_nutrients">
             <tr>
                 <td>#</td>
                 <td>Nutrient</td>
@@ -154,10 +155,19 @@
             </tr>
         </table>
     </div>
+    <div class="col-md-12 text-right" >
+        <p>
+            <br/>
+            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
+            <br/>
+            <br/>
+        </p>
+    </div>
 </div>
 <div class="row">
     <div class="col-md-12">
-        <table class='table'>
+        <h1 ng-cloak>Products <button ng-init="page_info.show_products=true;" ng-click="page_info.show_products=!page_info.show_products" type="button" class="btn btn-info">Show/Hide</button></h1>
+        <table class='table' ng-show="page_info.show_products">
             <tr>
                 <td>#</td>
                 <td>Product</td>
@@ -218,7 +228,7 @@
     <div class="col-md-12 text-right" >
         <p>
             <br/>
-            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
+            <a class="btn btn-primary" ns-click="findOptimalMealPlan()">Find Meal Plan</a>
         </p>
     </div>
     <div class="col-md-12">
@@ -271,9 +281,10 @@
         </p>
     </div>
 </div>
-<div class="row">
+<div class="row" id="mealplan">
     <div class="col-md-12">
-        <table class="table table-bordered table-condensed">
+        <h1 ng-cloak>Meal Plan Nutrient Summary <button ng-init="page_info.show_nutrient_summary=true;" ng-click="page_info.show_nutrient_summary=!page_info.show_nutrient_summary" type="button" class="btn btn-info">Show/Hide</button></h1>
+        <table class="table table-bordered table-condensed" ng-show="page_info.show_nutrient_summary">
             <tr>
                 <td>
                     Nutrient
@@ -301,10 +312,3 @@
         </table>
     </div>
 </div>
-
-<style type="text/css">
-.vertical-text {
-    transform: rotate(90deg);
-    transform-origin: left top 0;
-}    
-</style>
