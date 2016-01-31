@@ -32,6 +32,7 @@
                         {{ span }} day(s)
                     </option>
                 </select>
+                <input ng-model="page_info.selected_span" />
             </div>
         </div>
         <div class="row">
@@ -228,7 +229,7 @@
     <div class="col-md-12 text-right" >
         <p>
             <br/>
-            <a class="btn btn-primary" ns-click="findOptimalMealPlan()">Find Meal Plan</a>
+            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
         </p>
     </div>
     <div class="col-md-12">
