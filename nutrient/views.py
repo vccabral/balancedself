@@ -15,7 +15,7 @@ from pulp import LpProblem, LpVariable, LpMinimize, lpSum
 from rest_framework import filters
 from rest_framework import generics
 from django.forms.models import model_to_dict
-
+from rest_framework.permissions import AllowAny
 
 class StandardFilter(django_filters.FilterSet):
     class Meta:
@@ -277,6 +277,7 @@ class CustomMealPlan(object):
 
 
 class CustomMealPlanAPIView(APIView):
+	permission_classes = (AllowAny,)
 
 	def get(self, request, *args, **kw):
 		mealplan = CustomMealPlan(request)

@@ -33,7 +33,7 @@ def new_nutrient_settings(apps, schema_editor):
 		constraint_us_rdis.quantity = nutrient[1]
 		constraint_us_rdis.save()
 
-		constraint_keto = Constraint.objects.get(standard=us_rdis, nutrient=nutrient_obj)
+		constraint_keto = Constraint.objects.get(standard=keto, nutrient=nutrient_obj)
 		constraint_keto.quantity = nutrient[2]
 		constraint_keto.save()
 
@@ -50,7 +50,7 @@ def new_nutrient_settings(apps, schema_editor):
 		constraint_us_rdis.max_quantity = nutrient[1]
 		constraint_us_rdis.save()
 
-		constraint_keto = Constraint.objects.get(standard=us_rdis, nutrient=nutrient_obj)
+		constraint_keto = Constraint.objects.get(standard=keto, nutrient=nutrient_obj)
 		constraint_keto.max_quantity = nutrient[2]
 		constraint_keto.save()
 
