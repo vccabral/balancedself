@@ -86,7 +86,6 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			$scope.page_info.mealplan = outside_mealplan;
 			$scope.page_info.getting_meal_plan = false;
 			$scope.page_info.failed_to_find_meal = !mealplan.success;
-			console.log($scope.page_info.failed_to_find_meal);
 		});
 	};
 	$scope.get_product_index_by_id = function(id){

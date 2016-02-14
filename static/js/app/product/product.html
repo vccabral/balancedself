@@ -23,7 +23,7 @@
                     {{ product.price | currency }}
                 </td>
                 <td>
-                    {{ product.quanity_needed }}
+                {{ product.quanity_as_listed }} grams or {{ product.quanity_as_listed * 0.00220462 | number : 1 }} lbs 
                 </td>
             </tr>
         </table>
