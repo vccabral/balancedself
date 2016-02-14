@@ -14,7 +14,8 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		'products': Product.get(),
 		'selected_span': 7,
 		'mealplan': null,
-		'failed_to_find_meal': false
+		'failed_to_find_meal': false,
+		'show_refresh': false
 	};
 
 	$scope.setMeal = function(){
@@ -87,6 +88,7 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			$scope.page_info.getting_meal_plan = false;
 			$scope.page_info.failed_to_find_meal = !mealplan.success;
 		});
+		$scope.page_info.show_refresh=false;
 	};
 	$scope.get_product_index_by_id = function(id){
 		return _.findIndex($scope.page_info.products.results, function(o) { return o.id == id; });

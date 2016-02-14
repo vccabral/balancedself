@@ -108,7 +108,9 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <h1>Meal Plan <button ng-init="page_info.show_all_products=false;" ng-click="page_info.show_all_products=!page_info.show_all_products" type="button" class="btn btn-info">Show all Produts?</button>
+        <h1>Meal Plan <button ng-init="page_info.show_all_products=false;" ng-click="page_info.show_all_products=!page_info.show_all_products" type="button" class="btn btn-info">Show all Products?</button>
+        <a ng-class="{'disabled': !page_info.show_refresh}" ng-click="findOptimalMealPlan()" class="btn btn-danger">Refresh</a>
+        
         </h1>
         <p ng-if="page_info.mealplan">
             <h4>Optimal Meal Plan</h4>
@@ -138,6 +140,7 @@
                             <select 
                                 ng-cloak 
                                 ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].custom_span"
+                                ng-change="page_info.show_refresh=true;"
                             >
                                 <option value="none">None</option>
                                 <option value="entire">Entire Period</option>
@@ -151,6 +154,7 @@
                             <input 
                                 class="form-control"
                                 ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].quantity" 
+                                ng-change="page_info.show_refresh=true;"
                             />
                           </div>
                         </td>
@@ -159,6 +163,7 @@
                             <input 
                                 class="form-control"
                                 ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].max_quantity" 
+                                ng-change="page_info.show_refresh=true;"
                             />
                           </div>
                         </td>
