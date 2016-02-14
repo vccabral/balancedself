@@ -7,9 +7,14 @@ var mealAppAPI = angular.module(
 );
 
 mealAppAPI.constant('api_url', url_base+'/api/v1/');
+mealAppAPI.constant('siteversion', 2);
 mealAppAPI.constant('user', user);
 mealAppAPI.constant('user_id', user_id);
 mealAppAPI.constant('authenticated', authenticated);
+mealAppAPI.constant('_', window._);
+mealAppAPI.run(function ($rootScope) {
+	$rootScope._ = window._;
+});
 
 mealAppAPI.factory('Standard', function(api_url, $resource) {
 	return $resource(api_url+"standard/:id")

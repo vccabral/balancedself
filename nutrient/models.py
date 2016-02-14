@@ -80,6 +80,7 @@ class Product(models.Model):
 	has_been_converted = models.BooleanField(default=False)
 	quantity = models.IntegerField(default=0)
 	max_quantity = models.IntegerField(default=7)
+	custom_span = models.CharField(max_length=50, default="daily")
 
 	class Meta:
 		ordering = ['name']
