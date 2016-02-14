@@ -118,7 +118,7 @@
             <span ng-if="page_info.failed_to_find_meal">
                 We couldn't find a meal plan for you. Please try and lighten your constraints or checkback later when more products have been added.
             </span>
-            <p>
+            <p ng-if="!page_info.failed_to_find_meal">
                 <table class='table' ng-show="page_info.mealplan.success">
                     <tr>
                         <td>Product</td>
