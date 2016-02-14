@@ -128,6 +128,7 @@
                         <td class="success">Custom Min.</td>
                         <td class="success">Custom Max.</td>
                         <td>Suggested Quantity</td>
+                        <td>Item Size</td>
                         <td>Price</td>
                         <td>Total</td>
                     </tr>
@@ -171,6 +172,9 @@
                             {{ lineitem.product_quantity }}
                         </td>
                         <td>
+                            {{ page_info.products.results[get_product_index_by_id(lineitem.id)].quanity_as_listed }} grams <br/> {{ page_info.products.results[get_product_index_by_id(lineitem.id)].quanity_as_listed * 0.00220462 | number : 1 }} lbs
+                        </td>
+                        <td>
                             {{ lineitem.price | currency }}
                         </td>
                         <td>
@@ -178,7 +182,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="3">
+                        <td colspan="7">
                             Total
                         </td>
                         <td>
