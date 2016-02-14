@@ -17,25 +17,14 @@
                     </option>
                 </select>
             </div>
-        </div>
-        <div class="row">
             <div class="col-md-3">
-                Mealspan Plan: 
+                # of days:
             </div>
             <div class="col-md-9">
-                <select 
-                    class="form-control"
-                    ng-cloak 
-                    ng-model="page_info.selected_span"
-                >
-                    <option ng-value="span" ng-repeat="span in page_info.spans">
-                        {{ span }} day(s)
-                    </option>
-                </select>
-                <input ng-model="page_info.selected_span" />
+                <input class="col-md-12" ng-model="page_info.selected_span" />
             </div>
         </div>
-        <div class="row">
+         <div class="row">
             <hr/>
         </div>
         <div class="row">
@@ -44,7 +33,7 @@
             </div>
             <div class="col-md-9">
                 <span 
-                    ng-repeat="tag in page_info.exclude_tags.results" 
+                    ng-repeat="tag in page_info.tags.results" 
                     class="label"
                     style="margin-right:5px; display:inline-block"
                     ng-class="{'label-default': !tag.selected,'label-danger': tag.selected}"
@@ -55,59 +44,10 @@
                 </span>
             </div>
         </div>
-        <div class="row">
-            <hr/>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <span class="label label-warning">Required</span> Every product will have all of these. If you ONLY want products that are natural then click natural and every product returned will have to have the natural tag.
-            </div>
-            <div class="col-md-9">
-                <span 
-                    ng-repeat="tag in page_info.required_tags.results" 
-                    class="label"
-                    style="margin-right:5px; display:inline-block"
-                    ng-class="{'label-default': !tag.selected,'label-warning': tag.selected}"
-                    ng-init="tag.selected=false;"
-                    ng-click="tag.selected=!tag.selected;"
-                >
-                    {{ tag.name }}
-                </span>
-            </div>
-        </div>
-        <div class="row">
-            <hr/>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <span class="label label-success">Desires</span> Any product shown to you will have at least one of these tag. If you want fruits, vegetables, and meats, you can select those tags by clicking on them and EVERY product return will be tagged with either fruit, vegetable or meat.
-            </div>
-            <div class="col-md-9">
-                <span 
-                    ng-repeat="tag in page_info.desired_tags.results" 
-                    class="label"
-                    style="margin-right:5px; display:inline-block"
-                    ng-class="{'label-default': !tag.selected,'label-success': tag.selected}"
-                    ng-init="tag.selected=true;"
-                    ng-click="tag.selected=!tag.selected;"
-                >
-                    {{ tag.name }}
-                </span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-12 text-right" >
-        <p>
-            <br/>
-            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
-            <br/>
-            <br/>
-        </p>
-    </div>
-</div>
+   </div>
 <div class="row">
     <div class="col-md-12">
-        <h1 ng-cloak>Nutrients <button ng-init="page_info.show_nutrients=true;" ng-click="page_info.show_nutrients=!page_info.show_nutrients" type="button" class="btn btn-info">Show/Hide</button></h1>
+        <h1 ng-cloak>Nutrients <button ng-init="page_info.show_nutrients=false;" ng-click="page_info.show_nutrients=!page_info.show_nutrients" type="button" class="btn btn-info">Show/Hide</button></h1>
         <table class='table' ng-show="page_info.show_nutrients">
             <tr>
                 <td>#</td>
@@ -164,83 +104,16 @@
             <br/>
         </p>
     </div>
+
 </div>
 <div class="row">
     <div class="col-md-12">
-        <h1 ng-cloak>Products <button ng-init="page_info.show_products=true;" ng-click="page_info.show_products=!page_info.show_products" type="button" class="btn btn-info">Show/Hide</button></h1>
-        <table class='table' ng-show="page_info.show_products">
-            <tr>
-                <td>#</td>
-                <td>Product</td>
-                <td>Tags</td>
-                <td>Size</td>
-                <td>Span</td>
-                <td>Min.</td>
-                <td>Max.</td>
-            </tr>
-            <tr ng-repeat="product in page_info.products.results" ng-if="should_show_product(product)">
-                <td>
-                    {{ $index+1 }}
-                </td>
-                <td>
-                    {{ product.name }}
-                </td>
-                <td>
-                    <span ng-repeat="tag in product.tags">{{ tag.name }}{{ $last ? '':',' }} </span>
-                </td>
-                <td>
-                    {{ product.quanity_as_listed | number:1 }}&nbsp;grams <br/>
-                    {{ product.quanity_as_listed * 0.00220462 | number:1 }}&nbsp;lbs <br/>
-                </td>
-                <td>
-                    <select 
-                        ng-cloak 
-                        ng-model="product.custom_span"
-                        ng-init="product.custom_span='daily'"
-                    >
-                        <option value="none">None</option>
-                        <option value="entire">Entire Period</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                    </select>
-                </td>
-                <td class="col-xs-2">
-                  <div class="form-group">
-                    <input 
-                        class="form-control"
-                        ng-model="product.quantity" 
-                    />
-                  </div>
-                </td>
-                <td class="col-xs-2">
-                  <div class="form-group">
-                    <input 
-                        class="form-control"
-                        ng-model="product.max_quantity" 
-                    />
-                  </div>
-                </td>
-            </tr>
-        </table>        
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12 text-right" >
-        <p>
-            <br/>
-            <a class="btn btn-primary" ng-click="findOptimalMealPlan()">Find Meal Plan</a>
-        </p>
-    </div>
-    <div class="col-md-12">
-        <h1>Meal Plan</h1>
+        <h1>Meal Plan <button ng-init="page_info.show_all_products=true;" ng-click="page_info.show_all_products=!page_info.show_all_products" type="button" class="btn btn-info">Show all Produts?</button>
+        </h1>
         <p ng-if="page_info.mealplan">
             <h4>Optimal Meal Plan</h4>
             <span ng-if="page_info.selected_standard == ''">
                 Please select a meal plan to continue.
-            </span>
-            <span ng-if="page_info.getting_meal_plan && page_info.selected_standard!=''">
-                We are working on retrieving a meal plan for you! Please be patient. 
             </span>
             <span ng-if="page_info.failed_to_find_meal">
                 We couldn't find a meal plan for you. Please try and lighten your constraints or checkback later when more products have been added.
@@ -249,14 +122,45 @@
                 <table class='table' ng-show="page_info.mealplan.success">
                     <tr>
                         <td>Product</td>
+                        <td>Span Limit</td>
+                        <td>Min</td>
+                        <td>Max</td>
                         <td>#</td>
                         <td>Price</td>
                         <td>Total</td>
                     </tr>
-                    <tr ng-repeat="lineitem in page_info.mealplan.product_line_items | orderBy:'-product_quantity'" ng-show="lineitem.product_quantity">
+                    <tr ng-repeat="lineitem in page_info.mealplan.product_line_items | orderBy:'-product_quantity'" ng-show="page_info.show_all_products || (lineitem.product_quantity > 0)">
                         <td>
-                            {{ lineitem.name }}
-                            {{ lineitem.product_package_size }}
+                            {{ lineitem.name }}<br/>
+                            {{ page_info.products.results[get_product_index_by_id(lineitem.id)].quanity_as_listed }} grams or {{ page_info.products.results[get_product_index_by_id(lineitem.id)].quanity_as_listed * 0.00220462 | number : 1 }} lbs 
+                        </td>
+                        <td>
+                            <select 
+                                ng-cloak 
+                                ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].custom_span"
+                            >
+                                <option value="none">None</option>
+                                <option value="entire">Entire Period</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </td>
+                        <td class="col-xs-2">
+                          <div class="form-group">
+                            <input 
+                                class="form-control"
+                                ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].quantity" 
+                            />
+                          </div>
+                        </td>
+                        <td class="col-xs-2">
+                          <div class="form-group">
+                            <input 
+                                class="form-control"
+                                ng-model="page_info.products.results[get_product_index_by_id(lineitem.id)].max_quantity" 
+                            />
+                          </div>
                         </td>
                         <td>
                             {{ lineitem.product_quantity }}
@@ -282,34 +186,4 @@
         </p>
     </div>
 </div>
-<div class="row" id="mealplan">
-    <div class="col-md-12">
-        <h1 ng-cloak>Meal Plan Nutrient Summary <button ng-init="page_info.show_nutrient_summary=true;" ng-click="page_info.show_nutrient_summary=!page_info.show_nutrient_summary" type="button" class="btn btn-info">Show/Hide</button></h1>
-        <table class="table table-bordered table-condensed" ng-show="page_info.show_nutrient_summary">
-            <tr>
-                <td>
-                    Nutrient
-                </td>
-                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                    {{ lineitem.name }}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    #
-                </td>
-                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                    {{ lineitem.product_quantity }}
-                </td>
-            </tr>
-            <tr ng-repeat="constraint in page_info.standard_constraints">
-                <td>
-                    {{ constraint.nutrient.name }}
-                </td>
-                <td ng-repeat="lineitem in page_info.mealplan.product_line_items | filter:greaterThan('product_quantity', 0)">
-                    {{ lineitem.nutrient_totals[constraint.nutrient.id] | number:'2' }}
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
+

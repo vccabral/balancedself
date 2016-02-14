@@ -15,9 +15,11 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		'selected_span': 7,
 		'mealplan': null
 	};
+
 	$scope.setMeal = function(){
 		$scope.page_info.standard_constraints = angular.copy($scope.page_info.standards.results[$scope.page_info.selected_standard-1].constraints_readonly);
 	};
+
 	var add_nutrient_params = function(params){
 		for(var i=0;i<$scope.page_info.standard_constraints.length;i++){
 			var d = $scope.page_info.standard_constraints[i];
@@ -25,11 +27,13 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			params['nutrient_'+d.nutrient.id+'_high'] = d.max_quantity;
 		}
 	};
+
 	var get_exclusions = function(){
 		var active_exclusions = _.filter($scope.page_info.tags.results, function(o) { return o.selected; });
 		var named_arr_of_exclusions = _.map(active_exclusions, function(o){return o.name});
 		return named_arr_of_exclusions;
 	};
+
 	var product_is_allowed = function(product, exclusions){
 		var tags = _.map(product.tags, function(o){return o.name});
 		var shared_tags = _.intersection(tags, exclusions);
@@ -40,7 +44,7 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 		for(var i=0;i<$scope.page_info.products.results.length;i++){
 			var product = $scope.page_info.products.results[i];
 			var custom_span = product.custom_span;
-			var span_multiplier = 1;
+			var span_multiplier = get_multiplier(custom_span, $scope.page_info.selected_span);
 			var exclusions = get_exclusions();
 			var product_allowed = product_is_allowed(product, exclusions);
 			var product_allowed_multiplier = product_allowed ? 1 : 0;
@@ -49,6 +53,27 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 			params['product_'+product.id+'_high'] = product.max_quantity * span_multiplier * product_allowed_multiplier;
 		}
 	};
+
+		var get_multiplier = function(k, span){
+			if(k=='none'){
+				return 0;
+			}
+			else if(k=='entire'){ //works
+				return 1.0 / span;
+			}
+			else if(k=='daily'){ //works
+				return 1.0;
+			}
+			else if(k=='weekly'){
+				return 1 / 7.0;
+			}
+			else if(k=='monthly'){
+				return 1 / 28.0;
+			}
+			else{
+				return 1;
+			}
+		}
 	$scope.findOptimalMealPlan = function(){
 		var params = {
 			'mealplan': $scope.page_info.selected_standard,
@@ -71,7 +96,7 @@ mealAppMealPlans.controller('MealPlannerController', function($scope, Standard, 
 mealAppMealPlans.config(function($routeProvider, $locationProvider, siteversion){
 	$routeProvider
 	.when('/mealplans', {
-		templateUrl: 'static/js/app/mealplan/mealplan2.html',
+		templateUrl: 'static/js/app/mealplan/mealplan.html',
 		controller: 'MealPlannerController'
 	});
 });
